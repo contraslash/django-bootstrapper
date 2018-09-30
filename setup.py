@@ -21,6 +21,7 @@ setup(
         'Programming Language :: Python :: 3',
     ],
     license='MIT',
+    install_requires=['gitpython>=2.1'],
     packages=['django_bootstrapper'],
     scripts=['django_bootstrapper/bin/django-bootstrapper.py'],
     zip_safe=False,
