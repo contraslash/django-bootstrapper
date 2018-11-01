@@ -1,3 +1,6 @@
 .vscode
 .idea
 django_bootstrapper_env
+
+build
+dist

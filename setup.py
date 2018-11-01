@@ -7,9 +7,10 @@ def readme():
 
 setup(
     name='django_bootstrapper',
-    version='0.0.1',
+    version='0.0.2',
     description='A simple bootstrapper for django applications',
     long_description=readme(),
+    long_description_content_type="text/markdown",
     url='http://github.com/contraslash/django-bootstrapper',
     keywords='django bootstrapping tool',
     author='contraslash S.A.S.',
