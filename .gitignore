@@ -1,6 +1,7 @@
 .vscode
 .idea
 django_bootstrapper_env
+django_bootstrapper.egg-info
 
 build
 dist
