@@ -1,5 +1,7 @@
 .vscode
 .idea
+.pytest_cache
+
 django_bootstrapper_env
 django_bootstrapper.egg-info
 
