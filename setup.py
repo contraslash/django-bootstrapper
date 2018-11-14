@@ -7,7 +7,7 @@ def readme():
 
 setup(
     name='django_bootstrapper',
-    version='0.0.3',
+    version='0.0.4',
     description='A simple bootstrapper for django applications',
     long_description=readme(),
     long_description_content_type="text/markdown",
@@ -22,7 +22,10 @@ setup(
         'Programming Language :: Python :: 3',
     ],
     license='MIT',
-    install_requires=['gitpython>=2.1'],
+    install_requires=[
+        'gitpython>=2.1',
+        'django_crud_generator'
+    ],
     packages=['django_bootstrapper'],
     scripts=['django_bootstrapper/bin/django-bootstrapper.py'],
     zip_safe=False,

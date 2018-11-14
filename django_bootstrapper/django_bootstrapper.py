@@ -1,7 +1,10 @@
+import codecs
 import os
 import sys
 import subprocess
 from git import Repo
+
+from django_crud_generator.django_crud_generator import render_template_with_args_in_file
 
 # from django_bootstrapper.conf import *
 DJANGO_VERSION_KEY = "django_version"
@@ -24,6 +27,11 @@ CREATING_SUBMODULES_MESSAGE = "Creating submodules"
 SUBMODULE_ADDED_MESSAGE = "{} submodule added"
 DOWNLOAD_SUBMODULES_MESSAGE = "Downloading submodules"
 SUBMODULE_DOWNLOADED_MESSAGE = "{} submodule downloaded"
+CREATING_EXTRA_FILES = "Creating extra files"
+
+# For file commons
+BASE_TEMPLATES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates")
+
 
 class DjangoBootstrapper(object):
 
@@ -141,9 +149,62 @@ class DjangoBootstrapper(object):
         self.repository.index.commit("Creating first file structure")
 
     @staticmethod
+    def create_extra_files(project_root, project_name):
+        print(CREATING_EXTRA_FILES)
+        DjangoBootstrapper.create_file_with_template_in_folder(
+            "README.md",
+            project_root,
+            BASE_TEMPLATES_DIR,
+            **{"project_name": project_name}
+        )
+        project_config_folder = os.path.join(
+            project_root,
+            project_name
+        )
+        templates_project_config_folder = os.path.join(
+            BASE_TEMPLATES_DIR,
+            "project_config"
+        )
+        files_in_project_config_folder = ["settings_prod.py"]
+        for file_in_project_config_folder in files_in_project_config_folder:
+            DjangoBootstrapper.create_file_with_template_in_folder(
+                file_in_project_config_folder,
+                project_config_folder,
+                templates_project_config_folder,
+                **{
+                    "project_name": project_name,
+                    "project_prefix": project_name.upper()
+                }
+            )
+
+    # For File commons
+    @staticmethod
+    def create_file(path):
+        return codecs.open(
+            path,
+            'w+',
+            encoding='UTF-8'
+        )
+
+    # For File commons
+    @staticmethod
     def create_directory(path):
         if not os.path.exists(path):
             os.makedirs(path)
+
+    # For File commons
+    @staticmethod
+    def create_file_with_template_in_folder(file, path, templates_path, **kwargs):
+        render_template_with_args_in_file(
+            DjangoBootstrapper.create_file(
+                os.path.join(
+                    path,
+                    file
+                )
+            ),
+            os.path.join(templates_path, "{}.tmpl".format(file)),
+            **kwargs
+        )
 
     def execute(self):
         self.update_options()
@@ -168,6 +229,10 @@ class DjangoBootstrapper(object):
             path=self.OPTION_DICT[PROJECT_ROOT_KEY],
             template_repo=self.OPTION_DICT[TEMPLATE_SUBMODULE_NAME_KEY],
             use_submodules=self.OPTION_DICT[USE_SUBMODULES_KEY] == "True"
+        )
+        self.create_extra_files(
+            project_root=self.OPTION_DICT[PROJECT_ROOT_KEY],
+            project_name=self.OPTION_DICT[PROJECT_NAME_KEY],
         )
 
 
