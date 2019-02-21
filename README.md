@@ -7,6 +7,24 @@ This is a simple django project generator, it uses django default command and co
 
 The main idea behind this projects is to automate some labors when we create projects.
 
+# Usage
+First create a new environment
+
+```bash
+# For pip users
+python -m venv my_custom_environment
+# For conda users
+conda create --name my_custom_environment
+```
+
+Now install django-bootstrapper
+
+```bash
+pip install django-bootstrapper
+```
+
+Now just execute `django-bootstrapper.py` and follow the rules
+
 The project folder structure will be:
 
 ```bash
@@ -34,3 +52,18 @@ automatically.
 Our main goal is to create a project with a structure that we can extend using templates and existing files.
  
 If you want to modify and add to your tree any submodule, we recommend to follow [this question](https://stackoverflow.com/questions/1260748/how-do-i-remove-a-submodule) 
+
+
+## Test your changes
+We want to include test on this suite so, to test your changes use
+
+```bash
+pytest
+```
+
+
+## Compile locally
+```bash
+python setup.py sdist
+python setup.py install
+```

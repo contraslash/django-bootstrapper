@@ -92,9 +92,10 @@ class DjangoBootstrapper(object):
         execute_from_command_line(['django-admin', 'startproject', name, path])
         print(DJANGO_PROJECT_CREATED_MESSAGE)
 
-    def initialize_git_repo(self, path, template_repo, use_submodules=True):
+    def initialize_git_repo(self, path, name, template_repo, use_submodules=True):
         """
         Create a project structure initializing the path folder and creating all submodule structure
+        If submodules is False,
         :param path:
         :param template_repo:
         :param use_submodules:
@@ -145,17 +146,26 @@ class DjangoBootstrapper(object):
                 os.path.join(path, "applications/base_template"),
             )
             print(SUBMODULE_DOWNLOADED_MESSAGE.format("base_template"))
-        self.repository.index.add(["."])
+        self.repository.git.add(A=True)
         self.repository.index.commit("Creating first file structure")
 
-    @staticmethod
-    def create_extra_files(project_root, project_name):
+    def create_extra_files(self, project_root, project_name, template_repo):
+        """
+        This functions create the extra files README.md and a settings_prod to your project folder
+        :param project_root:
+        :param project_name:
+        :param template_repo:
+        :return:
+        """
         print(CREATING_EXTRA_FILES)
         DjangoBootstrapper.create_file_with_template_in_folder(
             "README.md",
             project_root,
             BASE_TEMPLATES_DIR,
-            **{"project_name": project_name}
+            **{
+                "project_name": project_name,
+                "template_repo": template_repo
+            }
         )
         project_config_folder = os.path.join(
             project_root,
@@ -176,10 +186,17 @@ class DjangoBootstrapper(object):
                     "project_prefix": project_name.upper()
                 }
             )
+        self.repository.git.add(A=True)
+        self.repository.index.commit("Creating first file structure")
 
     # For File commons
     @staticmethod
     def create_file(path):
+        """
+        This function creates a file
+        :param path:
+        :return:
+        """
         return codecs.open(
             path,
             'w+',
@@ -189,12 +206,25 @@ class DjangoBootstrapper(object):
     # For File commons
     @staticmethod
     def create_directory(path):
+        """
+        This function creates a directory
+        :param path:
+        :return:
+        """
         if not os.path.exists(path):
             os.makedirs(path)
 
     # For File commons
     @staticmethod
     def create_file_with_template_in_folder(file, path, templates_path, **kwargs):
+        """
+        This function creates a file from a template in a specified directory, using kwargs
+        :param file:
+        :param path:
+        :param templates_path:
+        :param kwargs:
+        :return:
+        """
         render_template_with_args_in_file(
             DjangoBootstrapper.create_file(
                 os.path.join(
@@ -227,12 +257,14 @@ class DjangoBootstrapper(object):
         )
         self.initialize_git_repo(
             path=self.OPTION_DICT[PROJECT_ROOT_KEY],
+            name=self.OPTION_DICT[PROJECT_NAME_KEY],
             template_repo=self.OPTION_DICT[TEMPLATE_SUBMODULE_NAME_KEY],
             use_submodules=self.OPTION_DICT[USE_SUBMODULES_KEY] == "True"
         )
         self.create_extra_files(
             project_root=self.OPTION_DICT[PROJECT_ROOT_KEY],
             project_name=self.OPTION_DICT[PROJECT_NAME_KEY],
+            template_repo=self.OPTION_DICT[TEMPLATE_SUBMODULE_NAME_KEY],
         )
 
 

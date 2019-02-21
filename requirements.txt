@@ -2,3 +2,4 @@ gitdb2==2.0.5
 GitPython==2.1.11
 smmap2==2.0.5
 django-crud-generator==0.3.2
+pytest==4.0.0
