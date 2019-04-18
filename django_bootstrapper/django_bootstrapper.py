@@ -2,6 +2,8 @@ import codecs
 import os
 import sys
 import subprocess
+import random
+import string
 from git import Repo
 
 from django_crud_generator.django_crud_generator import render_template_with_args_in_file
@@ -12,6 +14,8 @@ TEMPLATE_SUBMODULE_NAME_KEY = "template_folder_name"
 PROJECT_ROOT_KEY = "project_root"
 PROJECT_NAME_KEY = "project_name"
 USE_SUBMODULES_KEY = "submodules"
+ADD_SCRIPTS_KEY = "scripts"
+DOCKER_IMAGE_KEY = "docker_image"
 VERBOSITY_KEY = 0
 
 INVALID_OPTION_MESSAGE = "Invalid option"
@@ -36,12 +40,19 @@ BASE_TEMPLATES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "t
 class DjangoBootstrapper(object):
 
     OPTION_DICT = {
-        DJANGO_VERSION_KEY: 2.1,
+        DJANGO_VERSION_KEY: 2.2,
         TEMPLATE_SUBMODULE_NAME_KEY: "contraslash/template_cdn_bootstrap",
         PROJECT_ROOT_KEY: "",
         PROJECT_NAME_KEY: "",
-        USE_SUBMODULES_KEY: "True"
+        USE_SUBMODULES_KEY: "True",
+        ADD_SCRIPTS_KEY: "False",
+        DOCKER_IMAGE_KEY: "contraslash/alpine-django-deploy-common"
     }
+
+    SCRIPTS = [
+        "create_bucket.sh",
+        "create_database.sql"
+    ]
 
     def __init__(self):
         self.repository = None
@@ -171,16 +182,16 @@ class DjangoBootstrapper(object):
             project_root,
             project_name
         )
-        templates_project_config_folder = os.path.join(
+        files_in_project_config_folder = ["settings_prod.py"]
+        templates_config_folder = os.path.join(
             BASE_TEMPLATES_DIR,
             "project_config"
         )
-        files_in_project_config_folder = ["settings_prod.py"]
         for file_in_project_config_folder in files_in_project_config_folder:
-            DjangoBootstrapper.create_file_with_template_in_folder(
+            self.create_file_with_template_in_folder(
                 file_in_project_config_folder,
                 project_config_folder,
-                templates_project_config_folder,
+                templates_config_folder,
                 **{
                     "project_name": project_name,
                     "project_prefix": project_name.upper()
@@ -236,6 +247,52 @@ class DjangoBootstrapper(object):
             **kwargs
         )
 
+    def create_scripts(self):
+        scripts_folder = os.path.join(
+            self.OPTION_DICT[PROJECT_ROOT_KEY],
+            "scripts"
+        )
+        self.create_directory(
+            scripts_folder
+        )
+        templates_scripts_folder = os.path.join(
+            BASE_TEMPLATES_DIR,
+            "scripts"
+        )
+        for script in self.SCRIPTS:
+            self.create_file_with_template_in_folder(
+                script,
+                scripts_folder,
+                templates_scripts_folder,
+                **{
+                    "project_name": self.OPTION_DICT[PROJECT_NAME_KEY],
+                    "random_password": "".join(random.choices(string.ascii_letters + string.digits, k=16))
+                }
+            )
+
+    def add_docker(self):
+        docker_files = [
+            "Dockerfile",
+            "requirements.txt",
+            "uwsgi.ini",
+
+        ]
+        templates_docker_folder = os.path.join(
+            BASE_TEMPLATES_DIR,
+            "docker_config"
+        )
+        for docker_file in docker_files:
+            self.create_file_with_template_in_folder(
+                docker_file,
+                self.OPTION_DICT[PROJECT_ROOT_KEY],
+                templates_docker_folder,
+                **{
+                    "project_name": self.OPTION_DICT[PROJECT_NAME_KEY],
+                    "django_version": self.OPTION_DICT[DJANGO_VERSION_KEY],
+                    "docker_base_image": self.OPTION_DICT[DOCKER_IMAGE_KEY]
+                }
+            )
+
     def execute(self):
         self.update_options()
 
@@ -266,6 +323,12 @@ class DjangoBootstrapper(object):
             project_name=self.OPTION_DICT[PROJECT_NAME_KEY],
             template_repo=self.OPTION_DICT[TEMPLATE_SUBMODULE_NAME_KEY],
         )
+
+        if self.OPTION_DICT[ADD_SCRIPTS_KEY] == "True":
+            self.create_scripts()
+
+        if self.OPTION_DICT[DOCKER_IMAGE_KEY] != "None":
+            self.add_docker()
 
 
 def execute_from_command_line():

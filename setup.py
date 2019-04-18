@@ -1,13 +1,14 @@
 import codecs
 from setuptools import setup
 
+
 def readme():
     with codecs.open('README.md') as f:
         return f.read()
 
 setup(
     name='django_bootstrapper',
-    version='0.0.5',
+    version='0.1.0',
     description='A simple bootstrapper for django applications',
     long_description=readme(),
     long_description_content_type="text/markdown",
@@ -36,4 +37,3 @@ setup(
         'Contraslash': 'https://contraslash.com/'
     },
 )
- 

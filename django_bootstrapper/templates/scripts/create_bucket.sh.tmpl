@@ -1,8 +1,8 @@
 #!/bin/bash
 
-export BUCKET_NAME=<replace_with_your_bucket_name>
-export UPLOAD_IAM_ROLE_ARN=<replace_with_the_full_arn_to_your_user>
-export PROFILE_NAME=<replace_with_your_aws_profile>
+export BUCKET_NAME=""
+export UPLOAD_IAM_ROLE_ARN=""
+export PROFILE_NAME=""
 pip install awscli
 aws s3api create-bucket \
     --bucket ${BUCKET_NAME} \
