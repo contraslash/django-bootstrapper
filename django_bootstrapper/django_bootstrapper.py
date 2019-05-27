@@ -139,12 +139,11 @@ class DjangoBootstrapper(object):
         execute_from_command_line(['django-admin', 'startproject', name, path])
         print(DJANGO_PROJECT_CREATED_MESSAGE)
 
-    def initialize_git_repo(self, path, name, template_repo, use_submodules=True):
+    def initialize_git_repo(self, path, use_submodules=True):
         """
         Create a project structure initializing the path folder and creating all submodule structure
         If submodules is False,
         :param path:
-        :param template_repo:
         :param use_submodules:
         :return:
         """
@@ -166,7 +165,6 @@ class DjangoBootstrapper(object):
                     submodule["url"],
                 )
                 print(SUBMODULE_ADDED_MESSAGE.format(submodule["name"]))
-
         else:
             print(DOWNLOAD_SUBMODULES_MESSAGE)
             for submodule in self.SUBMODULES:
@@ -334,8 +332,6 @@ class DjangoBootstrapper(object):
         )
         self.initialize_git_repo(
             path=self.OPTION_DICT[PROJECT_ROOT_KEY],
-            name=self.OPTION_DICT[PROJECT_NAME_KEY],
-            template_repo=self.OPTION_DICT[TEMPLATE_SUBMODULE_NAME_KEY],
             use_submodules=self.OPTION_DICT[USE_SUBMODULES_KEY] == "True"
         )
         self.create_extra_files(
