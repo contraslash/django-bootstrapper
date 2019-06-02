@@ -16,6 +16,7 @@ PROJECT_NAME_KEY = "project_name"
 USE_SUBMODULES_KEY = "submodules"
 ADD_SCRIPTS_KEY = "scripts"
 DOCKER_IMAGE_KEY = "docker_image"
+USER_MANAGEMENT = "user_management"
 VERBOSITY_KEY = 0
 
 INVALID_OPTION_MESSAGE = "Invalid option"
@@ -43,10 +44,36 @@ class DjangoBootstrapper(object):
         DJANGO_VERSION_KEY: 2.2,
         TEMPLATE_SUBMODULE_NAME_KEY: "contraslash/template_cdn_bootstrap",
         PROJECT_ROOT_KEY: "",
-        PROJECT_NAME_KEY: "",
-        USE_SUBMODULES_KEY: "True",
+        PROJECT_NAME_KEY: "config",
+        USE_SUBMODULES_KEY: "False",
         ADD_SCRIPTS_KEY: "False",
-        DOCKER_IMAGE_KEY: "contraslash/alpine-django-deploy-common"
+        DOCKER_IMAGE_KEY: "contraslash/alpine-django-deploy-common",
+        USER_MANAGEMENT: "False"
+    }
+
+    SUBMODULES = [
+        {
+            "name": "base",
+            "path": "base",
+            "url": "https://github.com/contraslash/base-django"
+        },
+        {
+            "name": "authentication",
+            "path": "applications/authentication",
+            "url": "https://github.com/contraslash/authentication-django"
+        }
+    ]
+
+    SUBMODULE_TEMPLATE = {
+        "name": "template",
+        "path": "applications/base_template",
+        "url": "https://github.com/{}"
+    }
+
+    SUBMODULE_USER_MANAGEMENT = {
+        "name": "user_management",
+        "path": "applications/user_management",
+        "url": "https://github.com/contraslash/user_management-django"
     }
 
     SCRIPTS = [
@@ -67,6 +94,15 @@ class DjangoBootstrapper(object):
 
             readed_value = input(string_to_show)
             self.OPTION_DICT[key] = readed_value if readed_value else value
+
+    def re_calculate_submodules(self):
+        if self.OPTION_DICT.get(TEMPLATE_SUBMODULE_NAME_KEY, ""):
+            self.SUBMODULE_TEMPLATE["url"] = self.SUBMODULE_TEMPLATE["url"].format(
+                self.OPTION_DICT.get(TEMPLATE_SUBMODULE_NAME_KEY, "")
+            )
+            self.SUBMODULES.append(self.SUBMODULE_TEMPLATE)
+        if self.OPTION_DICT.get(USER_MANAGEMENT, "") == "True":
+            self.SUBMODULES.append(self.SUBMODULE_USER_MANAGEMENT)
 
     def valid_options(self):
         """
@@ -103,12 +139,11 @@ class DjangoBootstrapper(object):
         execute_from_command_line(['django-admin', 'startproject', name, path])
         print(DJANGO_PROJECT_CREATED_MESSAGE)
 
-    def initialize_git_repo(self, path, name, template_repo, use_submodules=True):
+    def initialize_git_repo(self, path, use_submodules=True):
         """
         Create a project structure initializing the path folder and creating all submodule structure
         If submodules is False,
         :param path:
-        :param template_repo:
         :param use_submodules:
         :return:
         """
@@ -122,41 +157,22 @@ class DjangoBootstrapper(object):
 
         if use_submodules:
             print(CREATING_SUBMODULES_MESSAGE)
-            self.repository.create_submodule(
-                "base",
-                os.path.join(path, "base"),
-                "https://github.com/contraslash/base-django",
-            )
-            print(SUBMODULE_ADDED_MESSAGE.format("base"))
-            self.repository.create_submodule(
-                "authentication",
-                os.path.join(path, "applications/authentication"),
-                "https://github.com/contraslash/authentication-django",
-            )
-            print(SUBMODULE_ADDED_MESSAGE.format("authentication"))
-            self.repository.create_submodule(
-                "template",
-                os.path.join(path, "applications/base_template"),
-                "https://github.com/{}".format(template_repo),
-            )
-            print(SUBMODULE_ADDED_MESSAGE.format("base_template"))
+            for submodule in self.SUBMODULES:
+
+                self.repository.create_submodule(
+                    submodule["name"],
+                    os.path.join(path, submodule["path"]),
+                    submodule["url"],
+                )
+                print(SUBMODULE_ADDED_MESSAGE.format(submodule["name"]))
         else:
             print(DOWNLOAD_SUBMODULES_MESSAGE)
-            Repo.clone_from(
-                "https://github.com/contraslash/base-django",
-                os.path.join(path, "base")
-            )
-            print(SUBMODULE_DOWNLOADED_MESSAGE.format("base"))
-            Repo.clone_from(
-                "https://github.com/contraslash/authentication-django",
-                os.path.join(path, "applications/authentication"),
-            )
-            print(SUBMODULE_DOWNLOADED_MESSAGE.format("authentication"))
-            Repo.clone_from(
-                "https://github.com/{}".format(template_repo),
-                os.path.join(path, "applications/base_template"),
-            )
-            print(SUBMODULE_DOWNLOADED_MESSAGE.format("base_template"))
+            for submodule in self.SUBMODULES:
+                Repo.clone_from(
+                    submodule["url"],
+                    os.path.join(path, submodule["path"]),
+                )
+                print(SUBMODULE_DOWNLOADED_MESSAGE.format(submodule["name"]))
         self.repository.git.add(A=True)
         self.repository.index.commit("Creating first file structure")
 
@@ -297,6 +313,8 @@ class DjangoBootstrapper(object):
     def execute(self):
         self.update_options()
 
+        self.re_calculate_submodules()
+
         if not self.valid_options():
             print(INVALID_OPTION_MESSAGE)
             exit(1)
@@ -315,8 +333,6 @@ class DjangoBootstrapper(object):
         )
         self.initialize_git_repo(
             path=self.OPTION_DICT[PROJECT_ROOT_KEY],
-            name=self.OPTION_DICT[PROJECT_NAME_KEY],
-            template_repo=self.OPTION_DICT[TEMPLATE_SUBMODULE_NAME_KEY],
             use_submodules=self.OPTION_DICT[USE_SUBMODULES_KEY] == "True"
         )
         self.create_extra_files(
