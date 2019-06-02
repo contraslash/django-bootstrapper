@@ -272,6 +272,7 @@ class DjangoBootstrapper(object):
 
     def add_docker(self):
         docker_files = [
+            ".dockerignore",
             "Dockerfile",
             "requirements.txt",
             "uwsgi.ini",
