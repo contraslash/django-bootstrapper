@@ -42,7 +42,7 @@ class DjangoBootstrapper(object):
 
     OPTION_DICT = {
         DJANGO_VERSION_KEY: 2.2,
-        TEMPLATE_SUBMODULE_NAME_KEY: "contraslash/template_cdn_bootstrap",
+        TEMPLATE_SUBMODULE_NAME_KEY: "contraslash/base_template-django",
         PROJECT_ROOT_KEY: "",
         PROJECT_NAME_KEY: "config",
         USE_SUBMODULES_KEY: "False",
