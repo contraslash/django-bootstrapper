@@ -27,7 +27,7 @@ Now just execute `django-bootstrapper.py` and follow the rules
 
 The project folder structure will be:
 
-```bash
+```text
 project_folder
 ├── applications
 │   ├── authentication (Authentication app from https://github.com/contraslash/authentication-django)
@@ -40,7 +40,6 @@ project_folder
     ├── settings.py
     ├── urls.py
     └── wsgi.py
-
 ```
 
 The project is git submodule based, and creates submodules for `authentication`, `base_template` and `base`, 

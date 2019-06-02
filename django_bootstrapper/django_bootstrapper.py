@@ -3,6 +3,7 @@ import os
 import sys
 import subprocess
 import random
+import shutil
 import string
 from git import Repo
 
@@ -43,7 +44,7 @@ class DjangoBootstrapper(object):
     OPTION_DICT = {
         DJANGO_VERSION_KEY: 2.2,
         TEMPLATE_SUBMODULE_NAME_KEY: "contraslash/base_template-django",
-        PROJECT_ROOT_KEY: "",
+        PROJECT_ROOT_KEY: ".",
         PROJECT_NAME_KEY: "config",
         USE_SUBMODULES_KEY: "False",
         ADD_SCRIPTS_KEY: "False",
@@ -172,6 +173,7 @@ class DjangoBootstrapper(object):
                     submodule["url"],
                     os.path.join(path, submodule["path"]),
                 )
+                shutil.rmtree(os.path.join(path, submodule["path"], ".git"))
                 print(SUBMODULE_DOWNLOADED_MESSAGE.format(submodule["name"]))
         self.repository.git.add(A=True)
         self.repository.index.commit("Creating first file structure")
