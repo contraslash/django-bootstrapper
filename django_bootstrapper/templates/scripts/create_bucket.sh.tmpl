@@ -1,8 +1,23 @@
 #!/bin/bash
 
-export BUCKET_NAME=""
-export UPLOAD_IAM_ROLE_ARN=""
-export PROFILE_NAME=""
+if [ -z "$1" ]; then
+    echo "A first argument is required to be used as BUCKET NAME"
+    exit 1
+fi
+if [ -z "$2" ]; then
+    echo "A second argument is required to be used as UPLOAD IAM ROLE ARN i.e: arn:aws:iam::123456789012:user/user_name"
+    exit 1
+fi
+
+BUCKET_NAME=$1
+UPLOAD_IAM_ROLE_ARN=$2
+if [ -z "$3" ]; then
+    PROFILE_NAME="default"
+else
+    PROFILE_NAME=$3
+fi
+echo "Using ${PROFILE_NAME} as profile name"
+
 pip install awscli
 aws s3api create-bucket \
     --bucket ${BUCKET_NAME} \
